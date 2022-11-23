@@ -1,7 +1,12 @@
+using CalendarDemo.Infrastructure.EfCoreDbContext;
+using CalendarDemo.Infrastructure.Services.Implementations;
+using CalendarDemo.Infrastructure.Services.Integrations;
+using CalendarDemo.Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,6 +31,15 @@ namespace CalendarDemo
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserInvitationService, UserInvitationService>();
+            services.AddSingleton<IGoogleCalendarIntegrationService, GoogleCalendarIntegrationService>();
+
+            services.AddDbContext<CalendarDbContext>(o =>
+            {
+                o.UseSqlServer(Configuration["ConnectionStrings:CalendarDbConnectionString"]);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
