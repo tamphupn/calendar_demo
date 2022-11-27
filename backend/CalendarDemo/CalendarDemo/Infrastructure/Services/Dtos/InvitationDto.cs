@@ -16,5 +16,6 @@ namespace CalendarDemo.Infrastructure.Services.Dtos
         public IList<string> ExternalEmails { get; set; }
 
         public IList<string> UserResponseEmails { get; set; }
+        public string UserRequestEmail { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CalendarDemo.Infrastructure.EfCoreDbContext;
@@ -18,20 +19,37 @@ namespace CalendarDemo.Infrastructure.Services.Implementations
             _context = context;
         }
 
-        public async Task<bool> CreateAsync(UserDto user)
+        public async Task<User> CreateAsync(UserDto user)
         {
-            var newUser = new User()
+            var existedUser = _context.Users.FirstOrDefault(x => x.Email == user.Email);
+            if (existedUser == null)
             {
-                Id = Guid.NewGuid(),
-                Username = user.Username,
-                Password = user.Password,
-                Email = user.Email
-            };
-            await _context.Users.AddAsync(newUser);
+                var newUser = new User()
+                {
+                    Id = Guid.NewGuid(),
+                    Username = user.Username,
+                    Password = user.Password,
+                    Email = user.Email
+                };
+                await _context.Users.AddAsync(newUser);
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
+                return newUser;
 
-            return true;
+            }
+            return existedUser;    
+        }
+
+        public IList<UserDto> Get()
+        {
+            var query = _context.Users.Select(x => new UserDto()
+            {
+                Username = x.Username,
+                Email = x.Email,
+                Id = x.Id
+            });
+
+            return query.ToList();
         }
 
         public async Task<UserDto> LoginAsync(string username, string password)

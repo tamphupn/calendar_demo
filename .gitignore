@@ -348,3 +348,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/backend/CalendarDemo/CalendarDemo/Credentials
+/backend/CalendarDemo/CalendarDemo/token.json
+/backend/CalendarDemo/CalendarDemo/cr7.legend.fb@gmail.com.json

@@ -31,10 +31,11 @@ namespace CalendarDemo
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-
+            services.AddCors();
+            services.AddMemoryCache();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserInvitationService, UserInvitationService>();
-            services.AddSingleton<IGoogleCalendarIntegrationService, GoogleCalendarIntegrationService>();
+            services.AddScoped<IGoogleCalendarIntegrationService, GoogleCalendarIntegrationService>();
 
             services.AddDbContext<CalendarDbContext>(o =>
             {
@@ -53,6 +54,12 @@ namespace CalendarDemo
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(x => x
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .SetIsOriginAllowed(origin => true)
+               .AllowCredentials());
 
             app.UseAuthorization();
 

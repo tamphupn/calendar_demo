@@ -1,4 +1,5 @@
 using CalendarDemo.Infrastructure.Services.Dtos;
+using CalendarDemo.Infrastructure.Services.Integrations;
 using CalendarDemo.Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -10,17 +11,20 @@ using System.Threading.Tasks;
 namespace CalendarDemo.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/user")]
     public class UserController : ControllerBase
     {
         private readonly ILogger<UserController> _logger;
         private readonly IUserService _userService;
+        private readonly IGoogleCalendarIntegrationService _googleCalendarIntegrationService;
 
         public UserController(ILogger<UserController> logger,
-        IUserService userService)
+        IUserService userService,
+        IGoogleCalendarIntegrationService googleCalendarIntegrationService)
         {
             _logger = logger;
             _userService = userService;
+            _googleCalendarIntegrationService = googleCalendarIntegrationService;
         }
 
         [HttpPost]
@@ -28,7 +32,10 @@ namespace CalendarDemo.Controllers
         {
             try
             {
-                return await _userService.CreateAsync(user);
+                var userCreated = await _userService.CreateAsync(user);
+
+                var credential = _googleCalendarIntegrationService.LoginOauth2(userCreated.Id, userCreated.Email);
+                return true;
             }
             catch (Exception ex)
             {
@@ -47,6 +54,20 @@ namespace CalendarDemo.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"UserController - LoginAsync: {ex.Message}");
+                return null;
+            }
+        }
+
+        [HttpGet("user-dropdown")]
+        public  IList<UserDto> Get()
+        {
+            try
+            {
+                return _userService.Get();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"UserController - Get: {ex.Message}");
                 return null;
             }
         }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CalendarDemo.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/invitation")]
     public class InvitationController : ControllerBase
     {
         private readonly ILogger<InvitationController> _logger;
@@ -23,8 +23,22 @@ namespace CalendarDemo.Controllers
             _userInvitationService = userInvitationService;
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<bool> CreateAsync([FromBody] InvitationDto invitation)
+        {
+            try
+            {
+                return await _userInvitationService.CreateInvitationAsync(invitation);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"InvitationController - CreateAsync: {ex.Message}");
+                return false;
+            }
+        }
+
+        [HttpPost]
+        public async Task<bool> CreateTestAsync([FromBody] InvitationDto invitation)
         {
             try
             {

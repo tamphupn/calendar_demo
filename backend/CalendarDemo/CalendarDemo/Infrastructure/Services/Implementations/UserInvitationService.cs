@@ -32,16 +32,19 @@ namespace CalendarDemo.Infrastructure.Services.Implementations
             };
             await _context.Invitations.AddAsync(newInvitation);
 
-            invitation.ExternalEmails = invitation.ExternalEmails.Where(x => !string.IsNullOrEmpty(x)).ToList();
-            foreach (var email in invitation.ExternalEmails)
+            if (invitation.ExternalEmails != null && invitation.ExternalEmails.Any())
             {
-                _context.UserInvitations.Add(new UserInvitation()
+                invitation.ExternalEmails = invitation.ExternalEmails.Where(x => !string.IsNullOrEmpty(x)).ToList();
+                foreach (var email in invitation.ExternalEmails)
                 {
-                    Id = Guid.NewGuid(),
-                    UserId = invitation.UserRequestId,
-                    InvitationId = newInvitation.Id,
-                    ExternalEmail = email
-                });
+                    _context.UserInvitations.Add(new UserInvitation()
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = invitation.UserRequestId,
+                        InvitationId = newInvitation.Id,
+                        ExternalEmail = email
+                    });
+                }
             }
 
             foreach (var userId in invitation.UserResponseIds)
@@ -62,8 +65,17 @@ namespace CalendarDemo.Infrastructure.Services.Implementations
                 return new Guid(x);
             }).ToList());
 
-            await _googleCalendarIntegrationService.CreateGoogleCalendar(invitation);
-            return true;
+            var userRequest = _context.Users.FirstOrDefault(x => x.Id == invitation.UserRequestId);
+
+            if (userRequest != null)
+            {
+                invitation.UserRequestEmail = userRequest.Email;
+                await _googleCalendarIntegrationService.CreateGoogleCalendar(invitation);
+                return true;
+            }
+
+            
+            return false;
         }
 
         private IList<string> GetEmailUsers(IList<Guid> userIds)
